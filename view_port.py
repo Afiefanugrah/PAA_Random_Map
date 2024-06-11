@@ -213,15 +213,15 @@ class Viewport(tk.Tk):
     def button2_action(self):
         '''Aksi untuk tombol 2'''
         self.save_map()
-        print("Button 2 clicked")
+        print("seve img")
 
     def button3_action(self):
         '''Aksi untuk tombol 3'''
-        print("Button 3 clicked")
+        print("zoom in")
 
     def button4_action(self):
         '''Aksi untuk tombol 4'''
-        print("Button 4 clicked")
+        print("zoom out")
 
 
 def create_gui():
