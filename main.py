@@ -4,10 +4,6 @@ import tkinter as tk
 from tkinter import Canvas, Scrollbar, Button, Frame, messagebox
 import os
 
-background_imageries = ["texture/grass1.png", "texture/grass2.png", "texture/grass3.png", "texture/grass4.png", "texture/grass5.png",
-                        "texture/grass6.png", "texture/grass7.png", "texture/grass8.png", "texture/grass9.png", "texture/grass10.png",
-                        "texture/grass11.png" ]
-
 building_textures = [
                      "texture/stadium.png",
                      "texture/taman.png",
@@ -35,7 +31,7 @@ tree_and_rock_textures = ["texture/tree1.png", "texture/tree2.png", "texture/tre
 
 
 
-global tk_image  # Keep a reference to avoid garbage collection
+# global tk_image  # Keep a reference to avoid garbage collection
 scale = 10
 size = 150 * scale
 
@@ -197,23 +193,39 @@ def draw_dotted_road_lanes(image, borders, dot_length=20, gap_length=30, reducti
     return image
 
 
-def place_trees_and_rocks(image, blocks, textures, existing_elements, tree_rock_count=70, min_distance=20):
+def place_trees_and_rocks(image, blocks, textures, existing_elements, tree_rock_count=100, min_distance=20, max_attempts=100):
     draw = ImageDraw.Draw(image)
     for _ in range(tree_rock_count):
         placed = False
-        while not placed:
+        attempts = 0
+        
+        while not placed and attempts < max_attempts:
             block = random.choice(blocks)
             x, y, block_width, block_height = block
             texture = random.choice(textures)
             new_width, new_height = texture.size
-            new_x = random.randint(x, x + block_width - new_width)
-            new_y = random.randint(y, y + block_height - new_height)
             
-            if is_valid_placement(existing_elements, new_x, new_y, new_width, new_height, min_distance):
-                image.alpha_composite(texture, (new_x, new_y))
-                existing_elements.append((new_x, new_y, new_width, new_height))
-                placed = True
+            if new_width <= block_width and new_height <= block_height:
+                try:
+                    new_x = random.randint(x, x + block_width - new_width)
+                    new_y = random.randint(y, y + block_height - new_height)
+
+                    if is_valid_placement(existing_elements, new_x, new_y, new_width, new_height, min_distance):
+                        image.alpha_composite(texture, (new_x, new_y))
+                        existing_elements.append((new_x, new_y, new_width, new_height))
+                        placed = True
+                except ValueError as ve:
+                    print(f"ValueError encountered: {ve}")
+            else:
+                print(f"Skipping texture {texture} as it does not fit in block ({block_width}x{block_height})")
+            
+            attempts += 1
+
+        if not placed:
+            print(f"Failed to place tree/rock after {max_attempts} attempts.")
+    
     return image
+
 
 def create_image():
     # Generate the city map and get the list of blocks
